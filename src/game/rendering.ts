@@ -2,76 +2,46 @@ import { Vec2, SQRT_2 } from "@/lib/math";
 import { Player, PLAYERS } from "./common";
 import { GAP_APART, GAP_EVERY, GAP_SIZE, Settings } from "./settings";
 import { State, updateState } from "./state";
+import { forAllData } from "@/lib/quad-tree";
 
-function isValidPosition(
-  settings: Settings,
-  position: Vec2,
-  settledContext: CanvasRenderingContext2D,
-) {
-  const d = settledContext.getImageData(
-    Math.max(0, Math.round(position[0] + settings.snakeWidth / 2)),
-    Math.max(0, Math.round(position[1] + settings.snakeWidth / 2)),
-    Math.max(0, Math.round(settings.snakeWidth / SQRT_2)),
-    Math.max(0, Math.round(settings.snakeWidth / SQRT_2)),
+export function drawMap(state: State, context: CanvasRenderingContext2D) {
+  // Clear the canvas
+  context.clearRect(
+    0,
+    0,
+    state.settings.dimensions[0],
+    state.settings.dimensions[1],
   );
-  return d.data.every((value) => {
-    return value == 0 || value == 1;
-  });
-}
 
-export function renderGameFrame(
-  state: State,
-  context: CanvasRenderingContext2D,
-  settledContext: CanvasRenderingContext2D,
-  deltaTime: number,
-  iterations: number,
-) {
-  updateState(state, deltaTime, (pos) =>
-    isValidPosition(state.settings, pos, settledContext),
-  );
-  let gap = iterations;
-  for (const player of PLAYERS) {
-    drawPlayer(state, player, context, settledContext, deltaTime, gap);
-    gap += GAP_APART;
-  }
-}
-
-function drawPlayer(
-  state: State,
-  player: Player,
-  context: CanvasRenderingContext2D,
-  settledContext: CanvasRenderingContext2D,
-  deltaTime: number,
-  iterations: number,
-) {
-  const { position } = state.dynamics[player];
-
-  const draw = (context: CanvasRenderingContext2D) => {
-    if (iterations % GAP_EVERY < GAP_SIZE) {
-      return;
-    }
-
-    context.fillStyle = state.settings.colourMap[player];
-    context.beginPath();
-    context.ellipse(
-      position[0],
-      position[1],
-      state.settings.snakeWidth,
-      state.settings.snakeWidth,
-      0,
-      0,
-      Math.PI * 2,
+  // Draw all the segments
+  forAllData(state.map, (segment) => {
+    context.fillStyle = state.settings.colourMap[segment.player];
+    context.rotate(segment.angle);
+    context.fillRect(
+      segment.location[0],
+      segment.location[1],
+      segment.size[0],
+      segment.size[1],
     );
-    context.fill();
-  };
+    context.setTransform(1, 0, 0, 1, 0, 0);
+  });
 
-  draw(context);
-  state.settled.push(draw);
+  // Draw a circle around each player
+  // for (const player of PLAYERS) {
+  //   const playerDynamics = state.dynamics[player];
+  //   const playerWidth =
+  //     state.settings.segmentWidth[state.powerUps[player].size];
 
-  if (state.settled.length >= 1 / deltaTime) {
-    const next = state.settled.shift();
-    if (next) {
-      next(settledContext);
-    }
-  }
+  //   context.fillStyle = state.settings.playerDotColour;
+  //   context.ellipse(
+  //     playerDynamics.position[0],
+  //     playerDynamics.position[1],
+  //     playerWidth,
+  //     playerWidth,
+  //     0,
+  //     0,
+  //     Math.PI * 2,
+  //   );
+  //   context.fill();
+  // }
 }
