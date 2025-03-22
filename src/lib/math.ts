@@ -1,4 +1,6 @@
-export type Vec2 = [number, number]; // x, y
+export const SQRT_2 = Math.sqrt(2);
+
+export type Vec2 = [number, number];
 
 export function scale(v: Vec2, factor: number): Vec2 {
   return [v[0] * factor, v[1] * factor];
