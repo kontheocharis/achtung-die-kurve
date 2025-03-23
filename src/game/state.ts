@@ -18,6 +18,7 @@ import {
   isValidPosition,
   segmentIntersectsPosition,
 } from "./collisions";
+import { emptyGrid } from "@/lib/grid";
 
 export interface PowerUps {
   size: "normal" | "huge" | "tiny";
@@ -38,7 +39,7 @@ export interface State {
 export function newState(settings: Settings): State {
   return {
     iterations: 0,
-    map: emptyQuadTree(settings.dimensions[0], settings.dimensions[1]),
+    map: emptyGrid(settings.dimensions, 1 / settings.minCellSize),
     dynamics: initialDynamics(settings),
     powerUps: fromEntries(
       PLAYERS.map(
@@ -53,9 +54,9 @@ export function newState(settings: Settings): State {
 }
 
 export function updateState(state: State, deltaTime: number) {
-  addNewSegments(state, deltaTime);
   for (const player of PLAYERS) {
     updateDynamics(state, player, deltaTime, (p) => isValidPosition(state, p));
   }
+  addNewSegments(state, deltaTime);
   state.iterations++;
 }

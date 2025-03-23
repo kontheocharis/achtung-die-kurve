@@ -44,11 +44,11 @@ export function defaultSettings(): Settings {
       x: ["yellow", "right"],
     },
     speed: {
-      normal: 10,
+      normal: 100,
       fast: 200,
       slow: 50,
     },
-    turningSpeed: 50,
+    turningSpeed: 500,
     dimensions: [1000, 1000],
     unitsPerPixel: 0.2,
     segmentWidth: {
@@ -67,7 +67,7 @@ export function defaultSettings(): Settings {
     },
     playerDotColour: "#ffffff",
     graceIterations: 10,
-    debug: true,
+    debug: false,
   };
 }
 

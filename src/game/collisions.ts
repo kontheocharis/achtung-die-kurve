@@ -4,7 +4,8 @@ import { rectIntersectsCircle } from "@/lib/geometry";
 import { Settings } from "./settings";
 import { State } from "./state";
 import { Player } from "./common";
-import { getNearbyData } from "@/lib/quad-tree";
+import { getNearbyData } from "@/lib/grid";
+import { getPlayerDotPosition, getPlayerDotWidth } from "./dynamics";
 
 export function segmentIntersectsPosition(
   segment: Segment,
@@ -12,8 +13,8 @@ export function segmentIntersectsPosition(
   radius: number,
 ) {
   return rectIntersectsCircle(
+    add(segment.location, scale(segment.size, 0.5)),
     segment.size,
-    segment.location,
     segment.angle,
     position,
     radius,
@@ -21,11 +22,10 @@ export function segmentIntersectsPosition(
 }
 
 export function isValidPosition(state: State, player: Player) {
-  const playerSize = state.powerUps[player].size;
-  const playerWidth = state.settings.segmentWidth[playerSize];
-  const pos = state.dynamics[player].position;
+  const pos = getPlayerDotPosition(state, player);
+  const width = getPlayerDotWidth(state, player);
   return getNearbySegments(state, player).every(
-    (near) => !segmentIntersectsPosition(near, pos, playerWidth / 2),
+    (near) => !segmentIntersectsPosition(near, pos, width / 2),
   );
 }
 

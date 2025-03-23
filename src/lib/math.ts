@@ -41,6 +41,10 @@ export function posMod(a: number, b: number): number {
   return (b + (a % b)) % b;
 }
 
+export function floor(v: Vec2): Vec2 {
+  return [Math.floor(v[0]), Math.floor(v[1])];
+}
+
 export function unit(angle: number): Vec2 {
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
@@ -62,4 +66,9 @@ export function triangleArea(v1: Vec2, v2: Vec2, v3: Vec2): number {
   return (
     Math.abs(x1 * y2 + x2 * y3 + x3 * y1 - x1 * y3 - x2 * y1 - x3 * y2) / 2
   );
+}
+
+export function as2DIndex(v: Vec2, dimensions: Vec2): number {
+  const [width, _] = dimensions;
+  return v[0] + v[1] * width;
 }

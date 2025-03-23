@@ -59,12 +59,19 @@ export function updateDynamics(
   deltaTime: number,
   isValidPosition: (player: Player) => boolean,
 ) {
+  const dynamics = state.dynamics[player];
+  const settings = state.settings;
+
   if (!state.alive[player]) {
     return;
   }
 
-  const dynamics = state.dynamics[player];
-  const settings = state.settings;
+  if (!isValidPosition(player)) {
+    dynamics.velocity = [0, 0];
+    dynamics.acceleration = [0, 0];
+    state.alive[player] = false;
+    return;
+  }
 
   if (typeof dynamics.turning !== "undefined") {
     const rotVec = scale(
@@ -90,10 +97,19 @@ export function updateDynamics(
     add(dynamics.position, scale(dynamics.velocity, deltaTime)),
     settings.dimensions,
   );
+}
 
-  if (!isValidPosition(player)) {
-    dynamics.velocity = [0, 0];
-    dynamics.acceleration = [0, 0];
-    state.alive[player] = false;
-  }
+export function getPlayerDotPosition(state: State, player: Player): Vec2 {
+  const playerDynamics = state.dynamics[player];
+  const playerWidth = state.settings.segmentWidth[state.powerUps[player].size];
+  const centeredPos = add(playerDynamics.position, [
+    playerWidth / 2,
+    playerWidth / 2,
+  ]);
+  return add(centeredPos, scale(playerDynamics.velocityNorm, playerWidth / 2));
+}
+
+export function getPlayerDotWidth(state: State, player: Player): number {
+  const playerWidth = state.settings.segmentWidth[state.powerUps[player].size];
+  return playerWidth;
 }

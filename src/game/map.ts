@@ -1,4 +1,3 @@
-import { addData, QuadTree } from "@/lib/quad-tree";
 import { Player, PLAYERS } from "./common";
 import { State } from "./state";
 import {
@@ -10,8 +9,9 @@ import {
   Vec2,
 } from "@/lib/math";
 import { Memo } from "@/lib/utils";
+import { Grid, addData } from "@/lib/grid";
 
-export type Map = QuadTree<Segment>;
+export type Map = Grid<Segment>;
 
 export interface Segment {
   player: Player;
@@ -24,6 +24,8 @@ export interface Segment {
 
 export function addNewSegments(state: State, deltaTime: number) {
   for (const player of PLAYERS) {
+    if (!state.alive[player]) continue;
+
     const playerDynamics = state.dynamics[player];
     const playerSize = state.powerUps[player].size;
     const angle = Math.atan2(
@@ -47,18 +49,14 @@ export function addNewSegments(state: State, deltaTime: number) {
       const t = i / segmentsToAdd;
       const pos = add(initialPos, scale(dir, t));
 
-      state.map = addData(
-        state.map,
-        {
-          player,
-          angle,
-          size,
-          location: pos,
-          age: state.iterations,
-          boundingBox: boundingBox(pos, size, angle),
-        },
-        state.settings.minCellSize,
-      );
+      addData(state.map, {
+        player,
+        angle,
+        size,
+        location: pos,
+        age: state.iterations,
+        boundingBox: boundingBox(pos, size, angle),
+      });
     }
   }
 }
