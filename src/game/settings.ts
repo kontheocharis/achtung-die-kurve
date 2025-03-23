@@ -20,9 +20,11 @@ export interface Settings {
     tiny: number;
   };
   minCellSize: number;
+  gapWidthMs: number;
+  gapFrequencyMs: number;
   colourMap: Record<Player, string>;
   playerDotColour: string;
-  graceIterations: number;
+  graceMs: number;
   keys: Record<string, [Player, "left" | "right"]>;
   debug: boolean;
 }
@@ -44,11 +46,11 @@ export function defaultSettings(): Settings {
       x: ["yellow", "right"],
     },
     speed: {
-      normal: 100,
-      fast: 200,
-      slow: 50,
+      normal: 0.1,
+      fast: 0.2,
+      slow: 0.5,
     },
-    turningSpeed: 500,
+    turningSpeed: 0.0005,
     dimensions: [1000, 1000],
     unitsPerPixel: 0.2,
     segmentWidth: {
@@ -56,6 +58,8 @@ export function defaultSettings(): Settings {
       huge: 10,
       tiny: 2,
     },
+    gapWidthMs: 200,
+    gapFrequencyMs: 1000,
     minCellSize: 10,
     colourMap: {
       red: "#ff0000",
@@ -66,7 +70,7 @@ export function defaultSettings(): Settings {
       cyan: "#00ffff",
     },
     playerDotColour: "#ffffff",
-    graceIterations: 10,
+    graceMs: 100,
     debug: false,
   };
 }

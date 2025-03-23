@@ -56,7 +56,6 @@ export function initialDynamics(settings: Settings): Record<Player, Dynamics> {
 export function updateDynamics(
   state: State,
   player: Player,
-  deltaTime: number,
   isValidPosition: (player: Player) => boolean,
 ) {
   const dynamics = state.dynamics[player];
@@ -77,7 +76,7 @@ export function updateDynamics(
     const rotVec = scale(
       rotate(
         normalised(dynamics.velocity),
-        dynamics.turning === "left" ? Math.PI / 2 : -Math.PI / 2,
+        dynamics.turning === "left" ? -Math.PI / 2 : Math.PI / 2,
       ),
       state.settings.turningSpeed,
     );
@@ -89,12 +88,12 @@ export function updateDynamics(
   const playerSpeed = state.powerUps[player].speed;
 
   dynamics.velocityNorm = normalised(
-    add(dynamics.velocity, scale(dynamics.acceleration, deltaTime)),
+    add(dynamics.velocity, scale(dynamics.acceleration, state.deltaTime)),
   );
   dynamics.velocity = scale(dynamics.velocityNorm, settings.speed[playerSpeed]);
   dynamics.positionPrev = dynamics.position;
   dynamics.position = modulo(
-    add(dynamics.position, scale(dynamics.velocity, deltaTime)),
+    add(dynamics.position, scale(dynamics.velocity, state.deltaTime)),
     settings.dimensions,
   );
 }

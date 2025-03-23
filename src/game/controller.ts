@@ -5,9 +5,8 @@ import { KeyboardEvent } from "react";
 export function renderGameFrame(
   state: State,
   context: CanvasRenderingContext2D,
-  deltaTime: number,
 ) {
-  updateState(state, deltaTime);
+  updateState(state);
   drawMap(state, context);
 }
 

@@ -55,9 +55,10 @@ export function GameView({ settings }: { settings: Settings }) {
 
     let oldTime = Date.now();
     const render = (newTime: number) => {
-      const deltaTime = (newTime - oldTime) / 1000;
+      const deltaTime = newTime - oldTime;
       if (deltaTime > 0) {
-        renderGameFrame(state.current, context, deltaTime);
+        state.current.deltaTime = deltaTime;
+        renderGameFrame(state.current, context);
       }
       oldTime = newTime;
       requestId = requestAnimationFrame(render);

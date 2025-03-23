@@ -1,7 +1,7 @@
 import { add, scale, Vec2 } from "@/lib/math";
 import { forAllData, getNearbyData } from "@/lib/grid";
 import { Player, PLAYERS } from "./common";
-import { Map, Segment } from "./map";
+import { Map, Segment, segmentIsInGracePeriod } from "./map";
 import { State } from "./state";
 import { getNearbySegments, segmentIntersectsPosition } from "./collisions";
 import { getPlayerDotPosition, getPlayerDotWidth } from "./dynamics";
@@ -23,10 +23,12 @@ function drawSegment(
   const [extra0, extra1] = mapToCanvas(state, scale(segment.size, -1 / 2));
   const [size0, size1] = mapToCanvas(state, segment.size);
 
-  if (
-    state.settings.debug &&
-    state.iterations - segment.age < state.settings.graceIterations
-  ) {
+  // Do not show gaps
+  if (segment.isGap && !segmentIsInGracePeriod(state, segment)) {
+    return;
+  }
+
+  if (state.settings.debug && segmentIsInGracePeriod(state, segment)) {
     // Show grace iterations
     context.fillStyle = "#ff00ff44";
   } else {

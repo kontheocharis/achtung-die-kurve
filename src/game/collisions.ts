@@ -1,5 +1,5 @@
 import { Vec2, add, scale, triangleArea } from "@/lib/math";
-import { Segment } from "./map";
+import { Segment, segmentIsInGracePeriod } from "./map";
 import { rectIntersectsCircle } from "@/lib/geometry";
 import { Settings } from "./settings";
 import { State } from "./state";
@@ -25,7 +25,7 @@ export function isValidPosition(state: State, player: Player) {
   const pos = getPlayerDotPosition(state, player);
   const width = getPlayerDotWidth(state, player);
   return getNearbySegments(state, player).every(
-    (near) => !segmentIntersectsPosition(near, pos, width / 2),
+    (near) => near.isGap || !segmentIntersectsPosition(near, pos, width / 2),
   );
 }
 
@@ -37,10 +37,6 @@ export function getNearbySegments(state: State, player: Player): Segment[] {
     state.map,
     add(playerDynamics.position, scale([playerWidth, playerWidth], 0.5)),
   ).filter(
-    (near) =>
-      !(
-        near.player === player &&
-        state.iterations - near.age < state.settings.graceIterations
-      ),
+    (near) => !(near.player === player && segmentIsInGracePeriod(state, near)),
   );
 }

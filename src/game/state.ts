@@ -34,6 +34,8 @@ export interface State {
   alive: Record<Player, boolean>;
   unitsPerPixel: number;
   settings: Settings;
+  msElapsed: number;
+  deltaTime: number;
 }
 
 export function newState(settings: Settings): State {
@@ -49,14 +51,17 @@ export function newState(settings: Settings): State {
     ),
     unitsPerPixel: settings.unitsPerPixel,
     alive: fromEntries(PLAYERS.map((p) => [p, true] as const)),
+    msElapsed: 0,
+    deltaTime: 0,
     settings,
   };
 }
 
-export function updateState(state: State, deltaTime: number) {
+export function updateState(state: State) {
   for (const player of PLAYERS) {
-    updateDynamics(state, player, deltaTime, (p) => isValidPosition(state, p));
+    updateDynamics(state, player, (p) => isValidPosition(state, p));
   }
-  addNewSegments(state, deltaTime);
+  addNewSegments(state);
+  state.msElapsed += state.deltaTime;
   state.iterations++;
 }
