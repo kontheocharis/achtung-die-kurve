@@ -21,13 +21,9 @@ export interface Settings {
   };
   colourMap: Record<Player, string>;
   playerDotColour: string;
+  graceIterations: number;
   keys: Record<string, [Player, "left" | "right"]>;
-}
-
-export function getAspectRatio(settings: Settings): number {
-  const width = settings.dimensions[0];
-  const height = settings.dimensions[1];
-  return width / height;
+  debug: boolean;
 }
 
 export function defaultSettings(): Settings {
@@ -68,5 +64,13 @@ export function defaultSettings(): Settings {
       cyan: "#00ffff",
     },
     playerDotColour: "#ffffff",
+    graceIterations: 10,
+    debug: true,
   };
+}
+
+export function getAspectRatio(settings: Settings): number {
+  const width = settings.dimensions[0];
+  const height = settings.dimensions[1];
+  return width / height;
 }

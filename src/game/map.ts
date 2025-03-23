@@ -1,7 +1,14 @@
 import { addData, QuadTree } from "@/lib/quad-tree";
 import { Player, PLAYERS } from "./common";
 import { State } from "./state";
-import { add, area, rotateAbout, scale, subtract, Vec2 } from "@/lib/math";
+import {
+  add,
+  triangleArea,
+  rotateAbout,
+  scale,
+  subtract,
+  Vec2,
+} from "@/lib/math";
 import { Memo } from "@/lib/utils";
 
 export type Map = QuadTree<Segment>;
@@ -28,9 +35,10 @@ export function addNewSegments(state: State, deltaTime: number) {
       state.settings.segmentWidth[playerSize],
     ];
     const playerSpeed = state.settings.speed[state.powerUps[player].speed];
-    const segmentsPerPixel = 2 * (1 / state.settings.segmentWidth[playerSize]);
+    const unitsTravelled = playerSpeed * deltaTime;
+    const segmentsPerUnit = 2 * (1 / state.settings.segmentWidth[playerSize]);
 
-    const segmentsToAdd = Math.ceil(segmentsPerPixel * playerSpeed * deltaTime);
+    const segmentsToAdd = Math.ceil(segmentsPerUnit * unitsTravelled);
     const initialPos = playerDynamics.positionPrev;
     const finalPos = playerDynamics.position;
     const dir = subtract(finalPos, initialPos);
@@ -66,20 +74,4 @@ function boundingBox(
   const southEast = rotateAbout([x + width, y - height], angle, centre);
 
   return [northWest, northEast, southWest, southEast];
-}
-
-export function segmentIntersectsPosition(
-  segment: Segment,
-  position: Vec2,
-  radius: number,
-) {
-  const apd = area(segment.boundingBox[0], position, segment.boundingBox[3]);
-  const dpc = area(segment.boundingBox[3], position, segment.boundingBox[2]);
-  const cpb = area(segment.boundingBox[2], position, segment.boundingBox[1]);
-  const pba = area(position, segment.boundingBox[1], segment.boundingBox[0]);
-
-  const sum = apd + dpc + cpb + pba;
-  const rectArea = segment.size[0] * segment.size[1];
-
-  return sum <= rectArea;
 }

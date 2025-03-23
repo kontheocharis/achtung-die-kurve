@@ -12,7 +12,12 @@ import { Settings } from "./settings";
 import { emptyQuadTree, getNearbyData, QuadTree } from "@/lib/quad-tree";
 import { Dynamics, initialDynamics, updateDynamics } from "./dynamics";
 import { fromEntries } from "@/lib/utils";
-import { addNewSegments, Map, Segment, segmentIntersectsPosition } from "./map";
+import { addNewSegments, Map, Segment } from "./map";
+import {
+  getNearbySegments,
+  isValidPosition,
+  segmentIntersectsPosition,
+} from "./collisions";
 
 export interface PowerUps {
   size: "normal" | "huge" | "tiny";
@@ -49,33 +54,8 @@ export function newState(settings: Settings): State {
 
 export function updateState(state: State, deltaTime: number) {
   addNewSegments(state, deltaTime);
-  const ITERATION_TOLERANCE = 10;
-
   for (const player of PLAYERS) {
-    const playerSize = state.powerUps[player].size;
-    const segmentSize = state.settings.segmentWidth[playerSize];
-
-    updateDynamics(state, player, deltaTime, (pos) => {
-      const nearby = getNearbyData(
-        state.map,
-        add(pos, scale([segmentSize, segmentSize], 0.5)),
-        10 * segmentSize,
-      );
-
-      for (const near of nearby) {
-        if (
-          near.player === player &&
-          state.iterations - near.age < ITERATION_TOLERANCE
-        ) {
-          continue;
-        }
-
-        if (segmentIntersectsPosition(near, pos, segmentSize)) {
-          return false;
-        }
-      }
-      return true;
-    });
+    updateDynamics(state, player, deltaTime, (p) => isValidPosition(state, p));
   }
   state.iterations++;
 }

@@ -13,9 +13,10 @@ function handleResize(
   const aspect = getAspectRatio(state.settings);
   const entry = entries.find((entry) => entry.target === canvas);
   if (!entry) return;
+
   const width = entry.devicePixelContentBoxSize[0].inlineSize;
   const height = entry.devicePixelContentBoxSize[0].blockSize;
-  console.log(entry.devicePixelContentBoxSize);
+
   if (width / height < aspect) {
     // use width
     state.unitsPerPixel =
@@ -55,7 +56,7 @@ export function GameView({ settings }: { settings: Settings }) {
     let oldTime = Date.now();
     const render = (newTime: number) => {
       const deltaTime = (newTime - oldTime) / 1000;
-      if (deltaTime >= 0) {
+      if (deltaTime > 0) {
         renderGameFrame(state.current, context, deltaTime);
       }
       oldTime = newTime;

@@ -41,6 +41,12 @@ export function posMod(a: number, b: number): number {
   return (b + (a % b)) % b;
 }
 
+export function unit(angle: number): Vec2 {
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+  return [cos, sin];
+}
+
 export function rotateAbout(v: Vec2, angle: number, origin: Vec2): Vec2 {
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
@@ -49,7 +55,7 @@ export function rotateAbout(v: Vec2, angle: number, origin: Vec2): Vec2 {
   return [origin[0] + dx * cos - dy * sin, origin[1] + dx * sin + dy * cos];
 }
 
-export function area(v1: Vec2, v2: Vec2, v3: Vec2): number {
+export function triangleArea(v1: Vec2, v2: Vec2, v3: Vec2): number {
   const [x1, y1] = v1;
   const [x2, y2] = v2;
   const [x3, y3] = v3;

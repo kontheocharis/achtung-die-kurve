@@ -57,7 +57,7 @@ export function updateDynamics(
   state: State,
   player: Player,
   deltaTime: number,
-  isValidPosition: (position: Vec2) => boolean,
+  isValidPosition: (player: Player) => boolean,
 ) {
   if (!state.alive[player]) {
     return;
@@ -91,7 +91,7 @@ export function updateDynamics(
     settings.dimensions,
   );
 
-  if (!isValidPosition(dynamics.position)) {
+  if (!isValidPosition(player)) {
     dynamics.velocity = [0, 0];
     dynamics.acceleration = [0, 0];
     state.alive[player] = false;
