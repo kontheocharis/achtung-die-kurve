@@ -1,6 +1,8 @@
-import { magnitude2, subtract, Vec2 } from "./math";
+import { magnitude2, posMod, subtract, Vec2 } from "./math";
+import { assert, clearKeys } from "./utils";
 
 const POINTS_PER_CELL = 4;
+const MIN_CELL_SIZE = 20;
 
 export interface Located {
   location: Vec2;
@@ -112,22 +114,37 @@ export function addData<T extends Located>(
       return tree;
     case "leaf":
       tree.data.push(data);
-      if (tree.data.length > POINTS_PER_CELL) {
+      if (
+        tree.data.length > POINTS_PER_CELL &&
+        tree.horizontal[1] - tree.horizontal[0] > MIN_CELL_SIZE
+      ) {
         tree = splitLeaf(tree);
       }
       return tree;
   }
 }
 
-function quadrantIndex(coord: number, bounds: Vec2): number {
-  return Math.floor(2 * ((coord - bounds[0]) / (bounds[1] - bounds[0])));
+function quadrantIndex(coord: number, bounds: Vec2): 0 | 1 {
+  const coordWrapped = posMod(coord - bounds[0], bounds[1] - bounds[0]);
+  const idx = Math.floor(2 * (coordWrapped / (bounds[1] - bounds[0])));
+  assert(idx === 0 || idx === 1);
+  return idx;
 }
 
 function splitLeaf<T extends Located>(
   tree: QuadTree<T> & { kind: "leaf" },
 ): QuadTree<T> {
-  const horizontalMid = tree.horizontal[0] + tree.horizontal[1] / 2;
-  const verticalMid = tree.vertical[0] + tree.vertical[1] / 2;
+  const horizontalMid =
+    tree.horizontal[0] + (tree.horizontal[1] - tree.horizontal[0]) / 2;
+  const verticalMid =
+    tree.vertical[0] + (tree.vertical[1] - tree.vertical[0]) / 2;
+
+  if (
+    horizontalMid === tree.horizontal[0] ||
+    verticalMid === tree.vertical[0]
+  ) {
+    return tree;
+  }
 
   const northWest: T[] = [];
   const northEast: T[] = [];

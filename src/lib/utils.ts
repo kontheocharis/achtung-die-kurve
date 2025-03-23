@@ -20,3 +20,28 @@ export function fromEntries<K extends string | number | symbol, V>(
   }
   return result;
 }
+
+export type Memo<T> = {
+  cached: T | null;
+  compute: () => T;
+};
+
+export function getMemo<T>(m: Memo<T>): T {
+  if (m.cached === null) {
+    m.cached = m.compute();
+  }
+  return m.cached;
+}
+
+export function memo<T>(compute: () => T): Memo<T> {
+  return {
+    cached: null,
+    compute,
+  };
+}
+
+export function clearKeys<T extends Record<string, unknown>, K extends keyof T>(
+  obj: T,
+) {
+  Object.keys(obj).forEach((key) => delete obj[key]);
+}

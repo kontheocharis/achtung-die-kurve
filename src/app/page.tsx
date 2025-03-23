@@ -5,8 +5,7 @@ const SETTINGS = defaultSettings();
 
 export default function Home() {
   return (
-    <div className="container mx-auto">
-      <h1 className="text-xl py-4">Achtung die Kurve!</h1>
+    <div className="h-screen flex">
       <GameView settings={SETTINGS} />
     </div>
   );

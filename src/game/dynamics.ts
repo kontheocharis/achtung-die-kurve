@@ -14,7 +14,9 @@ import { fromEntries } from "@/lib/utils";
 
 export interface Dynamics {
   position: Vec2;
+  positionPrev: Vec2;
   velocity: Vec2;
+  velocityNorm: Vec2;
   acceleration: Vec2;
   turning?: "left" | "right";
 }
@@ -36,12 +38,14 @@ export function initialDynamics(settings: Settings): Record<Player, Dynamics> {
         radius * Math.sin(arg),
       ]);
       const dir = normalised(subtract(centre, position));
-      const velocity = scale(dir, -settings.speed.normal);
+      const velocity = scale(dir, settings.speed.normal);
       return [
         player,
         {
           position,
+          positionPrev: position,
           velocity,
+          velocityNorm: dir,
           acceleration: [0, 0],
         },
       ];
@@ -77,10 +81,11 @@ export function updateDynamics(
 
   const playerSpeed = state.powerUps[player].speed;
 
-  dynamics.velocity = scale(
-    normalised(add(dynamics.velocity, scale(dynamics.acceleration, deltaTime))),
-    settings.speed[playerSpeed],
+  dynamics.velocityNorm = normalised(
+    add(dynamics.velocity, scale(dynamics.acceleration, deltaTime)),
   );
+  dynamics.velocity = scale(dynamics.velocityNorm, settings.speed[playerSpeed]);
+  dynamics.positionPrev = dynamics.position;
   dynamics.position = modulo(
     add(dynamics.position, scale(dynamics.velocity, deltaTime)),
     settings.dimensions,

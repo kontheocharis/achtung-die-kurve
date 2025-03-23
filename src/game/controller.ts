@@ -7,7 +7,7 @@ export function renderGameFrame(
   context: CanvasRenderingContext2D,
   deltaTime: number,
 ) {
-  updateState(state, deltaTime, () => true);
+  updateState(state, deltaTime);
   drawMap(state, context);
 }
 
@@ -29,7 +29,9 @@ export function handleKeyUp(
 ): void {
   const bind = state.settings.keys[event.key];
   if (typeof bind !== "undefined") {
-    const [player, _] = bind;
-    state.dynamics[player].turning = undefined;
+    const [player, dir] = bind;
+    if (state.dynamics[player].turning === dir) {
+      state.dynamics[player].turning = undefined;
+    }
   }
 }

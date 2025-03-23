@@ -1,9 +1,35 @@
 "use client";
 
-import { newState } from "@/game/state";
+import { newState, State } from "@/game/state";
 import { handleKeyDown, handleKeyUp, renderGameFrame } from "@/game/controller";
-import { useEffect, useRef } from "react";
-import { Settings } from "@/game/settings";
+import { RefObject, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { getAspectRatio, Settings } from "@/game/settings";
+
+function handleResize(
+  canvas: HTMLCanvasElement,
+  state: State,
+  entries: ResizeObserverEntry[],
+) {
+  const aspect = getAspectRatio(state.settings);
+  const entry = entries.find((entry) => entry.target === canvas);
+  if (!entry) return;
+  const width = entry.devicePixelContentBoxSize[0].inlineSize;
+  const height = entry.devicePixelContentBoxSize[0].blockSize;
+  console.log(entry.devicePixelContentBoxSize);
+  if (width / height < aspect) {
+    // use width
+    state.unitsPerPixel =
+      (state.settings.dimensions[0] * devicePixelRatio) / width;
+    canvas.width = width / devicePixelRatio;
+    canvas.height = canvas.width / aspect;
+  } else {
+    // use height
+    state.unitsPerPixel =
+      (state.settings.dimensions[1] * devicePixelRatio) / height;
+    canvas.height = height / devicePixelRatio;
+    canvas.width = canvas.height * aspect;
+  }
+}
 
 export function GameView({ settings }: { settings: Settings }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -11,9 +37,19 @@ export function GameView({ settings }: { settings: Settings }) {
 
   useEffect(() => {
     let requestId: number | null = null;
-    canvasRef.current?.focus();
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    const context = canvasRef.current?.getContext("2d");
+    // Bring to front
+    canvas.focus();
+
+    // Resize events
+    const observer = new ResizeObserver((entries) =>
+      handleResize(canvas, state.current, entries),
+    );
+    observer.observe(canvas, { box: "device-pixel-content-box" });
+
+    const context = canvas.getContext("2d");
     if (!context) return;
 
     let oldTime = Date.now();
@@ -32,12 +68,12 @@ export function GameView({ settings }: { settings: Settings }) {
 
   return (
     <canvas
+      className="h-full w-full object-contain m-auto"
       tabIndex={1}
       onKeyDown={(e) => handleKeyDown(state.current, e)}
       onKeyUp={(e) => handleKeyUp(state.current, e)}
-      width={settings.dimensions[0]}
-      height={settings.dimensions[1]}
-      style={{ width: "100%" }}
+      width={String(settings.dimensions[0] / settings.unitsPerPixel)}
+      height={String(settings.dimensions[1] / settings.unitsPerPixel)}
       ref={canvasRef}
     />
   );

@@ -13,12 +13,8 @@ export interface Settings {
   };
   turningSpeed: number;
   dimensions: Vec2;
+  unitsPerPixel: number;
   segmentWidth: {
-    normal: number;
-    huge: number;
-    tiny: number;
-  };
-  segmentHeight: {
     normal: number;
     huge: number;
     tiny: number;
@@ -26,6 +22,12 @@ export interface Settings {
   colourMap: Record<Player, string>;
   playerDotColour: string;
   keys: Record<string, [Player, "left" | "right"]>;
+}
+
+export function getAspectRatio(settings: Settings): number {
+  const width = settings.dimensions[0];
+  const height = settings.dimensions[1];
+  return width / height;
 }
 
 export function defaultSettings(): Settings {
@@ -51,12 +53,8 @@ export function defaultSettings(): Settings {
     },
     turningSpeed: 500,
     dimensions: [1000, 1000],
+    unitsPerPixel: 0.2,
     segmentWidth: {
-      normal: 5,
-      huge: 10,
-      tiny: 2,
-    },
-    segmentHeight: {
       normal: 5,
       huge: 10,
       tiny: 2,
