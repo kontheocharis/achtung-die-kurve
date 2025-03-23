@@ -1,11 +1,10 @@
-import { Vec2, add, scale, triangleArea } from "@/lib/math";
-import { Segment, segmentIsInGracePeriod } from "./map";
 import { rectIntersectsCircle } from "@/lib/geometry";
-import { Settings } from "./settings";
-import { State } from "./state";
-import { Player } from "./common";
 import { getNearbyData } from "@/lib/grid";
+import { Vec2, add, scale } from "@/lib/math";
+import { Player } from "./common";
 import { getPlayerDotPosition, getPlayerDotWidth } from "./dynamics";
+import { Segment, segmentIsInGracePeriod } from "./map";
+import { State } from "./state";
 
 export function segmentIntersectsPosition(
   segment: Segment,

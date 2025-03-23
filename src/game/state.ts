@@ -1,24 +1,10 @@
-import {
-  add,
-  modulo,
-  normalised,
-  rotate,
-  scale,
-  subtract,
-  Vec2,
-} from "@/lib/math";
-import { Player, PLAYERS } from "./common";
-import { Settings } from "./settings";
-import { emptyQuadTree, getNearbyData, QuadTree } from "@/lib/quad-tree";
-import { Dynamics, initialDynamics, updateDynamics } from "./dynamics";
-import { fromEntries } from "@/lib/utils";
-import { addNewSegments, Map, Segment } from "./map";
-import {
-  getNearbySegments,
-  isValidPosition,
-  segmentIntersectsPosition,
-} from "./collisions";
 import { emptyGrid } from "@/lib/grid";
+import { fromEntries } from "@/lib/utils";
+import { isValidPosition } from "./collisions";
+import { Player, PLAYERS } from "./common";
+import { Dynamics, initialDynamics, updateDynamics } from "./dynamics";
+import { addNewSegments, Map } from "./map";
+import { Settings } from "./settings";
 
 export interface PowerUps {
   size: "normal" | "huge" | "tiny";

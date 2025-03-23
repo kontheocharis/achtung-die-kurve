@@ -2,7 +2,7 @@
 
 import { newState, State } from "@/game/state";
 import { handleKeyDown, handleKeyUp, renderGameFrame } from "@/game/controller";
-import { RefObject, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { getAspectRatio, Settings } from "@/game/settings";
 
 function handleResize(

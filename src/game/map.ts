@@ -1,14 +1,6 @@
 import { Player, PLAYERS } from "./common";
 import { State } from "./state";
-import {
-  add,
-  triangleArea,
-  rotateAbout,
-  scale,
-  subtract,
-  Vec2,
-} from "@/lib/math";
-import { Memo } from "@/lib/utils";
+import { add, rotateAbout, scale, subtract, Vec2 } from "@/lib/math";
 import { Grid, addData } from "@/lib/grid";
 
 export type Map = Grid<Segment>;

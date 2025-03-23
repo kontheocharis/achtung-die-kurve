@@ -1,10 +1,10 @@
-import { add, scale, Vec2 } from "@/lib/math";
-import { forAllData, getNearbyData } from "@/lib/grid";
-import { Player, PLAYERS } from "./common";
-import { Map, Segment, segmentIsInGracePeriod } from "./map";
-import { State } from "./state";
+import { forAllData } from "@/lib/grid";
+import { scale, Vec2 } from "@/lib/math";
 import { getNearbySegments, segmentIntersectsPosition } from "./collisions";
+import { Player, PLAYERS } from "./common";
 import { getPlayerDotPosition, getPlayerDotWidth } from "./dynamics";
+import { Segment, segmentIsInGracePeriod } from "./map";
+import { State } from "./state";
 
 export function mapToCanvas(state: State, v: Vec2): Vec2 {
   return scale(v, 1 / state.unitsPerPixel);
