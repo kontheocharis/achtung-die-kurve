@@ -19,6 +19,7 @@ export interface Settings {
     huge: number;
     tiny: number;
   };
+  minCellSize: number;
   colourMap: Record<Player, string>;
   playerDotColour: string;
   graceIterations: number;
@@ -43,11 +44,11 @@ export function defaultSettings(): Settings {
       x: ["yellow", "right"],
     },
     speed: {
-      normal: 100,
+      normal: 10,
       fast: 200,
       slow: 50,
     },
-    turningSpeed: 500,
+    turningSpeed: 50,
     dimensions: [1000, 1000],
     unitsPerPixel: 0.2,
     segmentWidth: {
@@ -55,6 +56,7 @@ export function defaultSettings(): Settings {
       huge: 10,
       tiny: 2,
     },
+    minCellSize: 10,
     colourMap: {
       red: "#ff0000",
       blue: "#0000ff",

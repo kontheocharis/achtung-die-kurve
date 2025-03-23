@@ -52,7 +52,7 @@ function drawSegment(
     context.fillStyle = "#ff00ff44";
   } else {
     if (nearbyColour) {
-      context.fillStyle = "#ffffffff";
+      context.fillStyle = "#ffffff";
     } else {
       context.fillStyle = state.settings.colourMap[segment.player];
     }
@@ -88,6 +88,7 @@ function drawPlayerCircle(
   // Show nearby segments
   if (state.settings.debug) {
     const nearby = getNearbySegments(state, player);
+    console.log(nearby);
     for (const near of nearby) {
       drawSegment(state, near, context, true);
     }

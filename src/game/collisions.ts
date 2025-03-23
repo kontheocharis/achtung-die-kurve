@@ -36,7 +36,6 @@ export function getNearbySegments(state: State, player: Player): Segment[] {
   return getNearbyData(
     state.map,
     add(playerDynamics.position, scale([playerWidth, playerWidth], 0.5)),
-    3 * playerWidth, // should be plenty
   ).filter(
     (near) =>
       !(

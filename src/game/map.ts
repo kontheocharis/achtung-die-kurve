@@ -47,14 +47,18 @@ export function addNewSegments(state: State, deltaTime: number) {
       const t = i / segmentsToAdd;
       const pos = add(initialPos, scale(dir, t));
 
-      state.map = addData(state.map, {
-        player,
-        angle,
-        size,
-        location: pos,
-        age: state.iterations,
-        boundingBox: boundingBox(pos, size, angle),
-      });
+      state.map = addData(
+        state.map,
+        {
+          player,
+          angle,
+          size,
+          location: pos,
+          age: state.iterations,
+          boundingBox: boundingBox(pos, size, angle),
+        },
+        state.settings.minCellSize,
+      );
     }
   }
 }

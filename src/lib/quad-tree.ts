@@ -8,9 +8,18 @@ export interface Located {
   location: Vec2;
 }
 
+type Index = [0 | 1, 0 | 1][];
+
 export type QuadTreeBase = {
   horizontal: Vec2;
   vertical: Vec2;
+  neighbours: Neighbours;
+};
+
+export type Neighbours = {
+  [H in 1 | 0 | -1]?: {
+    [V in H extends 0 ? 1 | -1 : 0 | 1 | -1]?: Index[];
+  };
 };
 
 export type QuadTree<T extends Located> = QuadTreeBase &
@@ -34,7 +43,26 @@ export function emptyQuadTree<T extends Located>(
     horizontal: [0, width],
     vertical: [0, height],
     data: [],
+    neighbours: {},
   };
+}
+
+export function getIndex<T extends Located>(
+  tree: QuadTree<T>,
+  at: Index,
+): QuadTree<T> {
+  if (tree.kind === "leaf" || at.length === 0) {
+    return tree;
+  }
+
+  const next = [...at];
+  const curr = next.shift();
+  assert(typeof curr !== "undefined", "Index out of bounds");
+
+  const x = quadrantIndex(curr[0], tree.horizontal);
+  const y = quadrantIndex(curr[1], tree.vertical);
+
+  return getIndex(tree.children[x][y], next);
 }
 
 export function forAllData<T extends Located>(
@@ -54,47 +82,33 @@ export function forAllData<T extends Located>(
   }
 }
 
+export function allData<T extends Located>(tree: QuadTree<T>): T[] {
+  const data: T[] = [];
+  forAllData(tree, (d) => data.push(d));
+  return data;
+}
+
 export function getNearbyData<T extends Located>(
   tree: QuadTree<T>,
   at: Vec2,
-  radius: number,
+  localTree = tree,
 ): T[] {
-  switch (tree.kind) {
+  switch (localTree.kind) {
     case "leaf":
-      return tree.data.filter(
-        (t) => magnitude2(subtract(t.location, at)) <= radius * radius,
-      );
+      // Get neighbour data too:
+      const neighbours = Object.values(localTree.neighbours)
+        .map((v) =>
+          Object.values(v).map((ls) =>
+            (ls ?? []).map((l) => allData(getIndex(tree, l))),
+          ),
+        )
+        .flat(3);
+
+      return localTree.data.concat(neighbours);
     case "node":
-      const rec = (i: number, j: number) =>
-        getNearbyData(tree.children[i][j], at, radius);
-
-      const horizontalMax = quadrantIndex(at[0] + radius, tree.horizontal);
-      const horizontalMin = quadrantIndex(at[0] - radius, tree.horizontal);
-      const verticalMax = quadrantIndex(at[1] + radius, tree.vertical);
-      const verticalMin = quadrantIndex(at[1] - radius, tree.vertical);
-
-      if (horizontalMax === horizontalMin) {
-        if (verticalMax === verticalMin) {
-          return rec(horizontalMax, verticalMax);
-        } else {
-          return [
-            ...rec(horizontalMax, verticalMax),
-            ...rec(horizontalMax, verticalMin),
-          ];
-        }
-      } else if (verticalMax === verticalMin) {
-        return [
-          ...rec(horizontalMax, verticalMax),
-          ...rec(horizontalMin, verticalMax),
-        ];
-      } else {
-        return [
-          ...rec(horizontalMax, verticalMax),
-          ...rec(horizontalMax, verticalMin),
-          ...rec(horizontalMin, verticalMax),
-          ...rec(horizontalMin, verticalMin),
-        ];
-      }
+      const x = quadrantIndex(at[0], tree.horizontal);
+      const y = quadrantIndex(at[1], tree.vertical);
+      return getNearbyData(tree, at, localTree.children[x][y]);
   }
 }
 
@@ -102,6 +116,8 @@ export function getNearbyData<T extends Located>(
 export function addData<T extends Located>(
   tree: QuadTree<T>,
   data: T,
+  minCellSize: number,
+  currIndex: Index = [],
 ): QuadTree<T> {
   switch (tree.kind) {
     case "node":
@@ -110,6 +126,8 @@ export function addData<T extends Located>(
       tree.children[horizontal][vertical] = addData(
         tree.children[horizontal][vertical],
         data,
+        minCellSize,
+        [...currIndex, [horizontal, vertical]],
       );
       return tree;
     case "leaf":
@@ -118,7 +136,7 @@ export function addData<T extends Located>(
         tree.data.length > POINTS_PER_CELL &&
         tree.horizontal[1] - tree.horizontal[0] > MIN_CELL_SIZE
       ) {
-        tree = splitLeaf(tree);
+        tree = splitLeaf(tree, currIndex);
       }
       return tree;
   }
@@ -133,6 +151,7 @@ function quadrantIndex(coord: number, bounds: Vec2): 0 | 1 {
 
 function splitLeaf<T extends Located>(
   tree: QuadTree<T> & { kind: "leaf" },
+  currIndex: Index,
 ): QuadTree<T> {
   const horizontalMid =
     tree.horizontal[0] + (tree.horizontal[1] - tree.horizontal[0]) / 2;
@@ -171,6 +190,7 @@ function splitLeaf<T extends Located>(
     kind: "node",
     horizontal: tree.horizontal,
     vertical: tree.vertical,
+    neighbours: tree.neighbours,
     children: [
       [
         {
@@ -178,12 +198,44 @@ function splitLeaf<T extends Located>(
           horizontal: [tree.horizontal[0], horizontalMid],
           vertical: [tree.vertical[0], verticalMid],
           data: northWest,
+          neighbours: {
+            "-1": {
+              "-1": tree.neighbours["-1"]?.["-1"],
+              "0": tree.neighbours["-1"]?.["0"],
+              "1": tree.neighbours["-1"]?.["1"],
+            },
+            "0": {
+              "-1": tree.neighbours["0"]?.["-1"],
+              "1": [[...currIndex, [0, 1]]],
+            },
+            "1": {
+              "-1": tree.neighbours["-1"]?.["-1"],
+              "0": [[...currIndex, [1, 0]]],
+              "1": [[...currIndex, [1, 1]]],
+            },
+          },
         },
         {
           kind: "leaf",
           horizontal: [tree.horizontal[0], horizontalMid],
           vertical: [verticalMid, tree.vertical[1]],
           data: northEast,
+          neighbours: {
+            "-1": {
+              "-1": tree.neighbours["-1"]?.["1"],
+              "0": [[...currIndex, [0, 0]]],
+              "1": [[...currIndex, [0, 1]]],
+            },
+            "0": {
+              "-1": tree.neighbours["0"]?.["-1"],
+              "1": [[...currIndex, [1, 1]]],
+            },
+            "1": {
+              "-1": tree.neighbours["1"]?.["-1"],
+              "0": tree.neighbours["1"]?.["0"],
+              "1": tree.neighbours["1"]?.["1"],
+            },
+          },
         },
       ],
       [
@@ -192,12 +244,44 @@ function splitLeaf<T extends Located>(
           horizontal: [horizontalMid, tree.horizontal[1]],
           vertical: [tree.vertical[0], verticalMid],
           data: southWest,
+          neighbours: {
+            "-1": {
+              "-1": [[...currIndex, [0, 0]]],
+              "0": [[...currIndex, [0, 1]]],
+              "1": tree.neighbours["-1"]?.["1"],
+            },
+            "0": {
+              "-1": tree.neighbours["0"]?.["-1"],
+              "1": [[...currIndex, [1, 1]]],
+            },
+            "1": {
+              "-1": tree.neighbours["1"]?.["-1"],
+              "0": tree.neighbours["1"]?.["0"],
+              "1": tree.neighbours["1"]?.["1"],
+            },
+          },
         },
         {
           kind: "leaf",
           horizontal: [horizontalMid, tree.horizontal[1]],
           vertical: [verticalMid, tree.vertical[1]],
           data: southEast,
+          neighbours: {
+            "-1": {
+              "-1": [[...currIndex, [0, 0]]],
+              "0": [[...currIndex, [0, 1]]],
+              "1": tree.neighbours["-1"]?.["1"],
+            },
+            "0": {
+              "-1": [[...currIndex, [1, 0]]],
+              "1": tree.neighbours["0"]?.["1"],
+            },
+            "1": {
+              "-1": tree.neighbours["1"]?.["-1"],
+              "0": tree.neighbours["1"]?.["0"],
+              "1": tree.neighbours["1"]?.["1"],
+            },
+          },
         },
       ],
     ],
